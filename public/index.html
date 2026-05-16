@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Skill Chat MVP</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">S</div>
+          <div>
+            <h1>Skill Chat</h1>
+            <p>本地 Skill 对话工作台</p>
+          </div>
+        </div>
+
+        <label class="field">
+          <span>当前 Skill</span>
+          <select id="skillSelect"></select>
+        </label>
+
+        <label class="field">
+          <span>接口厂商</span>
+          <select id="providerSelect">
+            <option value="volcengine-online">火山方舟在线推理</option>
+            <option value="volcengine-coding">火山 Coding Plan</option>
+            <option value="openai">OpenAI Responses</option>
+            <option value="custom">自定义 OpenAI 兼容</option>
+          </select>
+        </label>
+
+        <label id="baseUrlField" class="field">
+          <span>Base URL</span>
+          <input id="baseUrlInput" placeholder="https://ark.cn-beijing.volces.com/api/v3" />
+        </label>
+
+        <label class="field">
+          <span>模型 / 接入点</span>
+          <input id="modelInput" list="modelPresets" value="gpt-4.1-mini" />
+          <datalist id="modelPresets">
+            <option value="doubao-seed-2-0-mini-260215"></option>
+            <option value="doubao-seed-2-0-lite-260215"></option>
+            <option value="doubao-seed-2-0-pro-260215"></option>
+            <option value="ark-code-latest"></option>
+            <option value="gpt-4.1-mini"></option>
+          </datalist>
+          <small id="providerHelp"></small>
+        </label>
+
+        <details class="image-api-box" open>
+          <summary>Seedream 图片接口</summary>
+          <label class="field">
+            <span>图片 Base URL</span>
+            <input id="imageBaseUrlInput" value="https://ark.cn-beijing.volces.com/api/v3" />
+          </label>
+          <label class="field">
+            <span>图片模型</span>
+            <input id="imageModelInput" value="doubao-seedream-5-0-260128" />
+            <small>Doubao-Seedream-5.0-lite 展示名会自动转为 doubao-seedream-5-0-260128。</small>
+          </label>
+          <label class="field">
+            <span>图片尺寸</span>
+            <select id="imageSizeInput">
+              <option value="2K">2K</option>
+              <option value="1K">1K</option>
+              <option value="3K">3K</option>
+              <option value="1024x576">16:9 1024x576</option>
+              <option value="1536x864">16:9 1536x864</option>
+            </select>
+          </label>
+        </details>
+
+        <p class="env-note">API Key 只在后端环境变量中读取，不会出现在前端页面。</p>
+
+        <label class="field">
+          <span>额外偏好</span>
+          <textarea id="extraInput" rows="4" placeholder="例如：回答更短；先给思路再写计算。"></textarea>
+        </label>
+
+        <label class="check-field">
+          <input id="traceModeInput" type="checkbox" checked />
+          <span>步骤追踪模式</span>
+        </label>
+
+        <div class="mode-grid">
+          <button data-preset="普通对话">普通</button>
+          <button data-preset="讲题模式：先读题目信号，再路由方法，最后总结套路。">讲题</button>
+          <button data-preset="拆题模式：输出已知、所求、题眼、方法路由、关键步骤。">拆题</button>
+          <button data-preset="生成讲义模式：把解法整理成适合学生复习的讲义。">讲义</button>
+        </div>
+
+        <button id="checkProviderBtn" class="secondary">测试接口连接</button>
+        <button id="clearBtn" class="secondary">清空对话</button>
+
+        <section class="skill-card">
+          <h2 id="skillName">加载中</h2>
+          <p id="skillDesc"></p>
+        </section>
+      </aside>
+
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <h2>和 Skill 对话</h2>
+            <p id="skillsRoot"></p>
+          </div>
+          <button id="toggleSourceBtn" class="secondary">查看 Skill.md</button>
+        </header>
+
+        <div class="content-grid">
+          <section class="chat-panel">
+            <div id="messages" class="messages"></div>
+            <div id="stepChips" class="step-chips"></div>
+
+            <div id="imagePreview" class="image-preview"></div>
+
+            <form id="chatForm" class="composer">
+              <label class="upload-btn" title="上传题目截图">
+                <input id="imageInput" type="file" accept="image/*" multiple />
+                图片
+              </label>
+              <textarea id="messageInput" rows="3" placeholder="例如：用 yang 的视角讲这道题。可以直接粘贴题目，也可以上传截图。"></textarea>
+              <button id="sendBtn" type="submit">发送</button>
+            </form>
+          </section>
+
+          <aside id="problemPanel" class="problem-panel">
+            <div class="problem-head">
+              <h3>当前题目</h3>
+              <div class="problem-actions">
+                <button id="generateDiagramBtn" class="secondary">生成解析图</button>
+                <button id="generateJpgDiagramBtn" class="secondary">生成 JPG 解析图</button>
+                <button id="clearProblemBtn" class="secondary">清除</button>
+              </div>
+            </div>
+            <div id="problemImages" class="problem-images">
+              <p>上传题目截图后，会固定显示在这里。</p>
+            </div>
+            <div class="diagram-head">
+              <h3>解析图</h3>
+            </div>
+            <div id="diagramPanel" class="diagram-panel">
+              <p>发送题目并得到解答后，可以生成解析图。</p>
+            </div>
+          </aside>
+
+          <aside id="sourcePanel" class="source-panel hidden">
+            <div class="source-head">
+              <h3>Skill.md</h3>
+              <button id="closeSourceBtn" class="secondary">关闭</button>
+            </div>
+            <pre id="skillSource"></pre>
+          </aside>
+        </div>
+      </section>
+    </main>
+
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>
