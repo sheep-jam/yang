@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: skill-chat-mvp
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: ARK_API_KEY
+        sync: false
+      - key: SEEDREAM_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false

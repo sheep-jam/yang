@@ -213,3 +213,55 @@ ep-xxxxxxxx
 ```
 
 如果 Seedream 图片生成超时，先把图片尺寸从 `2K` 改为 `1K` 再试。
+
+## 备选部署：Render
+
+如果 Vercel 无法登录，可以用 Render 部署。项目已包含 `render.yaml`。
+
+### 方式 A：从 GitHub 导入
+
+1. 打开 https://render.com/
+2. 用 GitHub 登录。
+3. 点击 `New +` -> `Blueprint`。
+4. 选择你的 `skill-chat-mvp` 仓库。
+5. Render 会读取 `render.yaml`。
+6. 填写环境变量：
+
+```text
+ARK_API_KEY=你的火山方舟 key
+SEEDREAM_API_KEY=你的 Seedream 图片 key
+OPENAI_API_KEY=你的 OpenAI key，可选
+```
+
+7. 点击 `Apply` / `Deploy`。
+8. 部署完成后打开 Render 给你的公网地址，例如：
+
+```text
+https://skill-chat-mvp.onrender.com
+```
+
+### 方式 B：创建 Web Service
+
+如果不使用 Blueprint：
+
+1. 点击 `New +` -> `Web Service`。
+2. 选择 GitHub 仓库。
+3. 配置：
+
+```text
+Runtime: Node
+Build Command: npm install && npm run build
+Start Command: npm start
+```
+
+4. 添加环境变量：
+
+```text
+ARK_API_KEY
+SEEDREAM_API_KEY
+OPENAI_API_KEY
+```
+
+5. 点击 Deploy。
+
+Render 免费版可能会休眠，第一次打开会慢一点。
